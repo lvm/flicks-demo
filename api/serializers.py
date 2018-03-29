@@ -18,15 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
     )
     password = serializers.CharField(min_length=8, write_only=True)
 
-    def create(self, validated_data):
-        user = UserModel.objects.create(
-            username=validated_data['username']
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-
-        return user
-
     class Meta:
         model = UserModel
         fields = ('id', 'username', 'password')
@@ -45,25 +36,37 @@ class FilmSerializer(serializers.ModelSerializer):
 
     def get_casting(self, obj):
         return PersonBasicSerializer(
-            obj.as_actor.all(),
+            obj.as_actor.available(),
             many=True
         ).data
 
 
     def get_director(self, obj):
         return PersonBasicSerializer(
-            obj.as_director.all(),
+            obj.as_director.available(),
             many=True
         ).data
 
 
     def get_producer(self, obj):
         return PersonBasicSerializer(
-            obj.as_producer.all(),
+            obj.as_producer.available(),
             many=True
         ).data
 
 
+    def create(self, validated_data):
+        return Film.objects.create(
+            title=validated_data.get('title', None),
+            year=validated_data.get('year', None)
+        )
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.year = validated_data.get('code', instance.year)
+        instance.save()
+
+        return instance
 
     class Meta:
         model = Film
@@ -96,19 +99,19 @@ class PersonSerializer(serializers.ModelSerializer):
 
     def get_actor(self, obj):
         return FilmBasicSerializer(
-            obj.as_actor.all(),
+            obj.as_actor.available(),
             many=True
         ).data
 
     def get_director(self, obj):
         return FilmBasicSerializer(
-            obj.as_director.all(),
+            obj.as_director.available(),
             many=True
         ).data
 
     def get_producer(self, obj):
         return FilmBasicSerializer(
-            obj.as_producer.all(),
+            obj.as_producer.available(),
             many=True
         ).data
 

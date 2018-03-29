@@ -1,7 +1,12 @@
 # import django_filters
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from django.contrib.auth import get_user_model
+from django.contrib.auth import (
+    authenticate,
+    get_user_model,
+    login as django_login,
+    logout as django_logout,
+)
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView
 from rest_framework.renderers import JSONRenderer
@@ -30,24 +35,102 @@ from .serializers import (
 
 UserModel = get_user_model()
 
+def get_or_create_user(username, password):
+    created = False
+    try:
+        user = UserModel.objects.get(username=username)
+    except:
+        user = UserModel.objects.create(
+            username=username,
+        )
+        if not password:
+            user.set_unusable_password()
+        else:
+            user.set_password(password)
+        user.save()
+        created = True
+
+    return (user, created)
+
+
+def get_or_create_token(user):
+    token = Token.objects.filter(user=user)
+    if token:
+        return token.first()
+    else:
+        return Token.objects.create(user=user)
+
+
+def destroy_token(user):
+    user.auth_token.delete()
+
+
 class UserCreateView(APIView):
+    throttle_classes = (AnonRateThrottle,)
+    permission_classes = (permissions.AllowAny,)
+
     def post(self, request, format='json'):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            if user:
-                token = Token.objects.create(user=user)
-                json = serializer.data
-                json['token'] = token.key
-                return Response(json, status=status.HTTP_201_CREATED)
+            username = request.data.get("username")
+            password = request.data.get("password")
 
-        return Response(serializer.data, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            user, created = get_or_create_user(username, password)
+            if not created:
+                return Response({"message": "User already exists"},
+                                status=HTTP_409_CONFLICT)
+
+            token = get_or_create_token(user=user)
+            return Response({"message":"Welcome", "token": token.key},
+                            status=status.HTTP_201_CREATED)
+
+        return Response({"message": "Invalid username or password. Or both. Who knows."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserLoginView(APIView):
+    throttle_classes = (AnonRateThrottle,)
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, format='json'):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        user = authenticate(username=username, password=password)
+        if not user:
+            return Response({"message": "Login failed"},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        if not user.is_active:
+            return Response({"message": "User not enabled"},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        django_login(request, user)
+        token = get_or_create_token(user)
+
+        return Response({"message":"Welcome", "token": token.key})
+
+
+class UserLogoutView(APIView):
+    throttle_classes = (UserRateThrottle,)
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format='json'):
+        try:
+            destroy_token(request.user)
+        except (AtributeError, ObjectDoesNotExists):
+            pass
+
+        django_logout(request)
+
+        return Response({"message": "Thank you, Come again."})
 
 
 class FilmViewSet(mixins.ListModelMixin,
                   mixins.RetrieveModelMixin,
                   viewsets.GenericViewSet):
-
+    throttle_classes = (UserRateThrottle,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = Film.objects.available()
     serializer_class = FilmSerializer
 
@@ -68,6 +151,40 @@ class FilmViewSet(mixins.ListModelMixin,
             context={'request': request}
         )
         return Response(serializer.data)
+
+
+    def post(self, request, format='json'):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message":"Film data invalid",},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+    def put(self, request, pk=None, format='json'):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=pk)
+        serializer = self.serializer_class(obj, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message":"Film data invalid",},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete(self, request, pk=None, format='json'):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=pk)
+        obj.is_deleted = True
+        obj.save()
+        return Response({"message": "Gone with the wind"},
+                         status=status.HTTP_204_NO_CONTENT)
 
 
 class PersonViewSet(mixins.ListModelMixin,
