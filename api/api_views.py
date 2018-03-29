@@ -150,6 +150,12 @@ class FilmViewSet(mixins.ListModelMixin,
             many=True,
             context={'request': request}
         )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         return Response(serializer.data)
 
 
@@ -211,6 +217,12 @@ class PersonViewSet(mixins.ListModelMixin,
             many=True,
             context={'request': request}
         )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         return Response(serializer.data)
 
 
