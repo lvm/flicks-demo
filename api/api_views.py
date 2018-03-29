@@ -84,7 +84,7 @@ class UserCreateView(APIView):
             return Response({"message":"Welcome", "token": token.key},
                             status=status.HTTP_201_CREATED)
 
-        return Response({"message": "Invalid username or password. Or both. Who knows."},
+        return Response({"message": serializer.errors},
                         status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -221,5 +221,5 @@ class PersonViewSet(mixins.ListModelMixin,
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
         else:
-            return Response({"message":"Person data invalid",},
+            return Response({"message":serializer.errors,},
                             status=status.HTTP_400_BAD_REQUEST)

@@ -16,7 +16,7 @@ class CommaSeparatedField(serializers.Field):
         return map(lambda a: a.strip(), obj.split(','))
 
     def to_internal_value(self, data):
-        return data
+        return ",".join(data)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -100,7 +100,24 @@ class PersonSerializer(serializers.ModelSerializer):
     actor = serializers.SerializerMethodField()
     director = serializers.SerializerMethodField()
     producer = serializers.SerializerMethodField()
-
+    as_actor = serializers.PrimaryKeyRelatedField(
+        queryset=Film.objects.available(),
+        write_only=True,
+        many=True,
+        required=False
+    )
+    as_director = serializers.PrimaryKeyRelatedField(
+        queryset=Film.objects.available(),
+        write_only=True,
+        many=True,
+        required=False
+    )
+    as_producer = serializers.PrimaryKeyRelatedField(
+        queryset=Film.objects.available(),
+        write_only=True,
+        many=True,
+        required=False
+    )
 
     def get_actor(self, obj):
         return FilmBasicSerializer(
@@ -122,12 +139,25 @@ class PersonSerializer(serializers.ModelSerializer):
 
 
     def create(self, validated_data):
-        print (validated_data)
-        return Person.objects.create(
+        person = Person.objects.create(
             first_name=validated_data.get('first_name', None),
             last_name=validated_data.get('last_name', None),
             alias=validated_data.get('alias', None),
         )
+        as_actor = validated_data.get('as_actor', None)
+        if as_actor:
+            for film_id in as_actor:
+                person.as_actor.add(film_id)
+        as_director = validated_data.get('as_director', None)
+        if as_director:
+            for film_id in as_director:
+                person.as_director.add(film_id)
+        as_producer = validated_data.get('as_producer', None)
+        if as_producer:
+            for film_id in as_producer:
+                person.as_producer.add(film_id)
+
+        return person
 
     def update(self, instance, validated_data):
         instance.first_name = validated_data.get('first_name', instance.first_name)
@@ -142,5 +172,6 @@ class PersonSerializer(serializers.ModelSerializer):
         model = Person
         fields = ('id',
                   'first_name', 'last_name', 'alias',
-                  'actor', 'director', 'producer'
+                  'actor', 'director', 'producer',
+                  'as_actor', 'as_director', 'as_producer'
         )
