@@ -223,3 +223,26 @@ class PersonViewSet(mixins.ListModelMixin,
         else:
             return Response({"message":serializer.errors,},
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+    def put(self, request, pk=None, format='json'):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=pk)
+        serializer = self.serializer_class(obj, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message":serializer.errors,},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete(self, request, pk=None, format='json'):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=pk)
+        obj.is_deleted = True
+        obj.save()
+        return Response({"message": "Gone with the wind"},
+                         status=status.HTTP_204_NO_CONTENT)

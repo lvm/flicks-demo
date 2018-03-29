@@ -146,16 +146,13 @@ class PersonSerializer(serializers.ModelSerializer):
         )
         as_actor = validated_data.get('as_actor', None)
         if as_actor:
-            for film_id in as_actor:
-                person.as_actor.add(film_id)
+            person.as_actor.set(as_actor, clear=True)
         as_director = validated_data.get('as_director', None)
         if as_director:
-            for film_id in as_director:
-                person.as_director.add(film_id)
+            person.as_director.set(as_director, clear=True)
         as_producer = validated_data.get('as_producer', None)
         if as_producer:
-            for film_id in as_producer:
-                person.as_producer.add(film_id)
+            person.as_producer.set(as_producer, clear=True)
 
         return person
 
@@ -163,6 +160,17 @@ class PersonSerializer(serializers.ModelSerializer):
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.alias = validated_data.get('alias', instance.alias)
+
+        as_actor = validated_data.get('as_actor', None)
+        if as_actor:
+            instance.as_actor.set(as_actor, clear=True)
+        as_director = validated_data.get('as_director', None)
+        if as_director:
+            instance.as_director.set(as_director, clear=True)
+        as_producer = validated_data.get('as_producer', None)
+        if as_producer:
+            instance.as_producer.set(as_producer, clear=True)
+
         instance.save()
 
         return instance
