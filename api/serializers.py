@@ -11,6 +11,13 @@ from .models import (
 
 UserModel = get_user_model()
 
+class CommaSeparatedField(serializers.Field):
+    def to_representation(self, obj):
+        return map(lambda a: a.strip(), obj.split(','))
+
+    def to_internal_value(self, data):
+        return data
+
 
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
@@ -89,13 +96,11 @@ class PersonBasicSerializer(serializers.ModelSerializer):
 
 
 class PersonSerializer(serializers.ModelSerializer):
-    aliases = serializers.SerializerMethodField()
+    alias = CommaSeparatedField()
     actor = serializers.SerializerMethodField()
     director = serializers.SerializerMethodField()
     producer = serializers.SerializerMethodField()
 
-    def get_aliases(self, obj):
-        return obj.aliases()
 
     def get_actor(self, obj):
         return FilmBasicSerializer(
@@ -116,10 +121,26 @@ class PersonSerializer(serializers.ModelSerializer):
         ).data
 
 
+    def create(self, validated_data):
+        print (validated_data)
+        return Person.objects.create(
+            first_name=validated_data.get('first_name', None),
+            last_name=validated_data.get('last_name', None),
+            alias=validated_data.get('alias', None),
+        )
+
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.alias = validated_data.get('alias', instance.alias)
+        instance.save()
+
+        return instance
+
 
     class Meta:
         model = Person
         fields = ('id',
-                  'first_name', 'last_name', 'aliases',
+                  'first_name', 'last_name', 'alias',
                   'actor', 'director', 'producer'
         )
