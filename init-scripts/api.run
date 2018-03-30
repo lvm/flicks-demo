@@ -1,2 +1,5 @@
 #!/bin/sh
-exec python /srv/flicks/manage.py runserver 0.0.0.0:8001
+cd /srv/flicks/;
+exec gunicorn flicks.wsgi:application \
+    --bind 0.0.0.0:8001 \
+    --workers 2
