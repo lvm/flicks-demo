@@ -24,6 +24,7 @@ from .managers import (
     FilmManager,
     PersonManager,
 )
+import roman
 
 UserModel = get_user_model()
 
@@ -49,6 +50,9 @@ class Film(BaseModel):
     )
 
     objects = FilmManager()
+
+    def in_roman(self):
+        return roman.toRoman(self.year)
 
     def get_absolute_url(self):
         return reverse('film-detail', args=[self.pk, 'json'])

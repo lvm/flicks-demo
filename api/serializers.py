@@ -32,9 +32,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class FilmBasicSerializer(serializers.ModelSerializer):
+    roman = serializers.SerializerMethodField()
+
+    def get_roman(self, obj):
+        return obj.in_roman()
+
     class Meta:
         model = Film
-        fields = ('id', 'title', 'year',)
+        fields = ('id', 'title', 'year', 'roman')
 
 
 class FilmSerializer(serializers.ModelSerializer):
@@ -42,6 +47,10 @@ class FilmSerializer(serializers.ModelSerializer):
     director = serializers.SerializerMethodField()
     producer = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
+    roman = serializers.SerializerMethodField()
+
+    def get_roman(self, obj):
+        return obj.in_roman()
 
     def get_casting(self, obj):
         return PersonBasicSerializer(
@@ -80,7 +89,7 @@ class FilmSerializer(serializers.ModelSerializer):
     class Meta:
         model = Film
         fields = ('id', 'url',
-                  'title', 'year',
+                  'title', 'year', 'roman',
                   'casting', 'director', 'producer')
 
 
