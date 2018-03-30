@@ -123,7 +123,8 @@ class UserLogoutView(APIView):
             pass
 
         django_logout(request)
-        return Response({"message": "Thank you, Come again."})
+        return Response({"message": "Thank you, Come again."},
+                        status=HTTP_202_ACCEPTED)
 
 
 class FilmViewSet(mixins.ListModelMixin,
@@ -136,7 +137,7 @@ class FilmViewSet(mixins.ListModelMixin,
 
     def list(self, request):
         queryset = self.get_queryset()
-        if request.GET.get('name', None):
+        if request.GET.get('title', None):
             queryset = queryset.filter(
                 name__icontains=request.GET.get('title')
             )
