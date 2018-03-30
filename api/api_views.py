@@ -35,6 +35,7 @@ from .serializers import (
 
 UserModel = get_user_model()
 
+
 def get_or_create_user(username, password):
     created = False
     try:
@@ -47,6 +48,7 @@ def get_or_create_user(username, password):
             user.set_unusable_password()
         else:
             user.set_password(password)
+            user.is_active = True
         user.save()
         created = True
 
@@ -81,7 +83,7 @@ class UserCreateView(APIView):
                                 status=HTTP_409_CONFLICT)
 
             token = get_or_create_token(user=user)
-            return Response({"message":"Welcome", "token": token.key},
+            return Response({"message": "Welcome", "token": token.key},
                             status=status.HTTP_201_CREATED)
 
         return Response({"message": serializer.errors},
@@ -107,8 +109,7 @@ class UserLoginView(APIView):
 
         django_login(request, user)
         token = get_or_create_token(user)
-
-        return Response({"message":"Welcome", "token": token.key})
+        return Response({"message": "Welcome", "token": token.key})
 
 
 class UserLogoutView(APIView):
@@ -122,7 +123,6 @@ class UserLogoutView(APIView):
             pass
 
         django_logout(request)
-
         return Response({"message": "Thank you, Come again."})
 
 
@@ -158,7 +158,6 @@ class FilmViewSet(mixins.ListModelMixin,
 
         return Response(serializer.data)
 
-
     def post(self, request, format='json'):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -166,9 +165,8 @@ class FilmViewSet(mixins.ListModelMixin,
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
         else:
-            return Response({"message":"Film data invalid",},
+            return Response({"message": serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
     def put(self, request, pk=None, format='json'):
         queryset = self.get_queryset()
@@ -180,9 +178,8 @@ class FilmViewSet(mixins.ListModelMixin,
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
         else:
-            return Response({"message":"Film data invalid",},
+            return Response({"message": serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
     def delete(self, request, pk=None, format='json'):
         queryset = self.get_queryset()
@@ -190,13 +187,15 @@ class FilmViewSet(mixins.ListModelMixin,
         obj.is_deleted = True
         obj.save()
         return Response({"message": "Gone with the wind"},
-                         status=status.HTTP_204_NO_CONTENT)
+                        status=status.HTTP_204_NO_CONTENT)
 
 
 class PersonViewSet(mixins.ListModelMixin,
                     mixins.RetrieveModelMixin,
                     viewsets.GenericViewSet):
 
+    throttle_classes = (UserRateThrottle,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = Person.objects.available()
     serializer_class = PersonSerializer
 
@@ -225,7 +224,6 @@ class PersonViewSet(mixins.ListModelMixin,
 
         return Response(serializer.data)
 
-
     def post(self, request, format='json'):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -233,9 +231,8 @@ class PersonViewSet(mixins.ListModelMixin,
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
         else:
-            return Response({"message":serializer.errors,},
+            return Response({"message": serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
     def put(self, request, pk=None, format='json'):
         queryset = self.get_queryset()
@@ -247,9 +244,8 @@ class PersonViewSet(mixins.ListModelMixin,
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
         else:
-            return Response({"message":serializer.errors,},
+            return Response({"message": serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
     def delete(self, request, pk=None, format='json'):
         queryset = self.get_queryset()
@@ -257,4 +253,4 @@ class PersonViewSet(mixins.ListModelMixin,
         obj.is_deleted = True
         obj.save()
         return Response({"message": "Gone with the wind"},
-                         status=status.HTTP_204_NO_CONTENT)
+                        status=status.HTTP_204_NO_CONTENT)

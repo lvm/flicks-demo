@@ -20,13 +20,13 @@ from django.core.validators import (
     MaxValueValidator
 )
 from datetime import datetime
-from multiselectfield import MultiSelectField
 from .managers import (
     FilmManager,
     PersonManager,
 )
 
 UserModel = get_user_model()
+
 
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -51,15 +51,13 @@ class Film(BaseModel):
     objects = FilmManager()
 
     def get_absolute_url(self):
-        return "www.jaja.com"
-
+        return reverse('film-detail', args=[self.pk, 'json'])
 
     def __str__(self):
         return u"{title} ({year})".format(
             title=self.title,
             year=self.year
         )
-
 
     class Meta:
         ordering = ["-year"]
@@ -70,17 +68,26 @@ class Film(BaseModel):
 class Person(BaseModel):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    alias = models.CharField(max_length=255,
-                             help_text=_("May contain several values separated by comma."))
-    as_actor = models.ManyToManyField("Film", related_name="as_actor", blank=True)
-    as_director = models.ManyToManyField("Film", related_name="as_director", blank=True)
-    as_producer = models.ManyToManyField("Film", related_name="as_producer", blank=True)
+    alias = models.CharField(
+        max_length=255,
+        help_text=_("May contain several values separated by comma."))
+    as_actor = models.ManyToManyField("Film",
+                                      related_name="as_actor",
+                                      blank=True)
+    as_director = models.ManyToManyField("Film",
+                                         related_name="as_director",
+                                         blank=True)
+    as_producer = models.ManyToManyField("Film",
+                                         related_name="as_producer",
+                                         blank=True)
 
     objects = PersonManager()
 
     def aliases(self):
         return map(lambda a: a.strip(), self.alias.split(','))
 
+    def get_absolute_url(self):
+        return reverse('person-detail', args=[self.pk, 'json'])
 
     def __str__(self):
         return u"{last}, {first}".format(
@@ -88,22 +95,6 @@ class Person(BaseModel):
             first=self.first_name
         )
 
-
     class Meta:
         verbose_name = _("Person")
         verbose_name_plural = _("People")
-
-
-###
-# Signals
-#
-
-@receiver(post_save, sender=UserModel)
-def create_user_post_save(sender, instance, created, **kwargs):
-    if created:
-        if not instance.is_superuser:
-            instance.is_active = True
-            instance.save()
-
-            api_users = Group.objects.get(name='api_users')
-            api_users.user_set.add(instance)

@@ -11,6 +11,7 @@ from .models import (
 
 UserModel = get_user_model()
 
+
 class CommaSeparatedField(serializers.Field):
     def to_representation(self, obj):
         return map(lambda a: a.strip(), obj.split(','))
@@ -40,6 +41,7 @@ class FilmSerializer(serializers.ModelSerializer):
     casting = serializers.SerializerMethodField()
     director = serializers.SerializerMethodField()
     producer = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
 
     def get_casting(self, obj):
         return PersonBasicSerializer(
@@ -47,13 +49,11 @@ class FilmSerializer(serializers.ModelSerializer):
             many=True
         ).data
 
-
     def get_director(self, obj):
         return PersonBasicSerializer(
             obj.as_director.available(),
             many=True
         ).data
-
 
     def get_producer(self, obj):
         return PersonBasicSerializer(
@@ -61,6 +61,8 @@ class FilmSerializer(serializers.ModelSerializer):
             many=True
         ).data
 
+    def get_url(self, obj):
+        return obj.get_absolute_url()
 
     def create(self, validated_data):
         return Film.objects.create(
@@ -71,13 +73,13 @@ class FilmSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.year = validated_data.get('code', instance.year)
-        instance.save()
 
+        instance.save()
         return instance
 
     class Meta:
         model = Film
-        fields = ('id',
+        fields = ('id', 'url',
                   'title', 'year',
                   'casting', 'director', 'producer')
 
@@ -88,11 +90,9 @@ class PersonBasicSerializer(serializers.ModelSerializer):
     def get_aliases(self, obj):
         return obj.aliases()
 
-
     class Meta:
         model = Person
         fields = ('id', 'first_name', 'last_name', 'aliases', )
-
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -118,6 +118,7 @@ class PersonSerializer(serializers.ModelSerializer):
         many=True,
         required=False
     )
+    url = serializers.SerializerMethodField()
 
     def get_actor(self, obj):
         return FilmBasicSerializer(
@@ -137,6 +138,8 @@ class PersonSerializer(serializers.ModelSerializer):
             many=True
         ).data
 
+    def get_url(self, obj):
+        return obj.get_absolute_url()
 
     def create(self, validated_data):
         person = Person.objects.create(
@@ -157,8 +160,10 @@ class PersonSerializer(serializers.ModelSerializer):
         return person
 
     def update(self, instance, validated_data):
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.first_name = validated_data.get('first_name',
+                                                 instance.first_name)
+        instance.last_name = validated_data.get('last_name',
+                                                instance.last_name)
         instance.alias = validated_data.get('alias', instance.alias)
 
         as_actor = validated_data.get('as_actor', None)
@@ -172,14 +177,11 @@ class PersonSerializer(serializers.ModelSerializer):
             instance.as_producer.set(as_producer, clear=True)
 
         instance.save()
-
         return instance
-
 
     class Meta:
         model = Person
-        fields = ('id',
+        fields = ('id', 'url',
                   'first_name', 'last_name', 'alias',
                   'actor', 'director', 'producer',
-                  'as_actor', 'as_director', 'as_producer'
-        )
+                  'as_actor', 'as_director', 'as_producer')

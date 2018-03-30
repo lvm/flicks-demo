@@ -5,6 +5,7 @@ from .models import (
     Person
 )
 
+
 @admin.register(Film)
 class FilmAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
