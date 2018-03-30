@@ -130,7 +130,7 @@ class FilmViewSet(mixins.ListModelMixin,
                   mixins.RetrieveModelMixin,
                   viewsets.GenericViewSet):
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Film.objects.available()
     serializer_class = FilmSerializer
 
@@ -195,7 +195,7 @@ class PersonViewSet(mixins.ListModelMixin,
                     viewsets.GenericViewSet):
 
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Person.objects.available()
     serializer_class = PersonSerializer
 
