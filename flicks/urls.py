@@ -1,7 +1,5 @@
-from django.contrib import admin
 from django.conf.urls import (
     url,
-    static,
     include,
 )
 from rest_framework import routers
@@ -14,12 +12,10 @@ from api.api_views import (
 )
 
 router = routers.DefaultRouter()
-# public views
 router.register(r'films', FilmViewSet)
 router.register(r'people', PersonViewSet)
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
     url(r'^api/', include(router.urls)),
     url(r'^api/users/create(/)?$', UserCreateView.as_view(), name='user-create'),
     url(r'^api/users/login(/)?$', UserLoginView.as_view(), name='user-login'),
