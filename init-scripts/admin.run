@@ -1,0 +1,2 @@
+#!/bin/sh
+exec python /srv/flicks/manage.py runserver 0.0.0.0:8002 --settings=flicks.admin
