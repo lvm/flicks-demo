@@ -17,9 +17,14 @@ router.register(r'films', FilmViewSet)
 router.register(r'people', PersonViewSet)
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(url='/api/', permanent=True), name='index'),
+    url(r'^$',
+        RedirectView.as_view(url='/api/', permanent=True),
+        name='index'),
     url(r'^api/', include(router.urls)),
-    url(r'^api/users/create(/)?$', UserCreateView.as_view(), name='user-create'),
-    url(r'^api/users/login(/)?$', UserLoginView.as_view(), name='user-login'),
-    url(r'^api/users/logout(/)?$', UserLogoutView.as_view(), name='user-logout'),
+    url(r'^api/users/create(/)?$',
+        UserCreateView.as_view(), name='user-create'),
+    url(r'^api/users/login(/)?$',
+        UserLoginView.as_view(), name='user-login'),
+    url(r'^api/users/logout(/)?$',
+        UserLogoutView.as_view(), name='user-logout'),
 ]
