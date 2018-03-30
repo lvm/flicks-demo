@@ -10,6 +10,7 @@ COPY ["init-scripts/nginx.run", "/etc/service/nginx/run"]
 
 RUN touch /etc/inittab \
     && apk --update add ca-certificates python3 runit nginx \
+    && mkdir -p /run/nginx/ \
     && python3 -m ensurepip && rm -r /usr/lib/python*/ensurepip \
     && pip3 install --upgrade pip setuptools \
     && if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip; fi \
