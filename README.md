@@ -104,7 +104,7 @@ return:
 
 ### Delete Film
 
-`POST /api/films/{id}`
+`DELETE /api/films/{id}`
 
 args:
 
@@ -166,7 +166,7 @@ return:
 
 ### Delete Person
 
-`POST /api/people/{id}`
+`DELETE /api/people/{id}`
 
 args:
 
