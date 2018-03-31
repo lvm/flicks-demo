@@ -4,6 +4,9 @@ This demo utilizes:
 
 * [Django](https://www.djangoproject.com/) (1.11)
 * [Django Rest Framework](http://www.django-rest-framework.org/) (3.6.3)
+* [DRFDocs](https://www.drfdocs.com)
+* [Gunicorn](http://gunicorn.org/)
+* [Nginx](https://nginx.org/)
 * [Docker](https://www.docker.com/)
 * [Alpine Linux](https://www.alpinelinux.org/)
 
