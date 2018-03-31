@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^$',
         RedirectView.as_view(url='/api/', permanent=True),
         name='index'),
+    url(r'^api/for-humans/', include('rest_framework_docs.urls')),
     url(r'^api/', include(router.urls)),
     url(r'^api/users/create(/)?$',
         UserCreateView.as_view(), name='user-create'),
