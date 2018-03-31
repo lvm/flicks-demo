@@ -10,6 +10,18 @@ This demo utilizes:
 * [Docker](https://www.docker.com/)
 * [Alpine Linux](https://www.alpinelinux.org/)
 
+
+## Design rationale
+
+The idea behind this project is to try to cover from A to Z the required steps to write an API with Django+DRF+Gunicorn+Nginx. Because of this many things were left out: A Front end in a fancy JS framwork, Task Queue, other DB than SQLite (which does a wonderful job nonetheless). Configuring all of these parts require time and go beyond the scope of this exercise.
+
+## Deployment
+
+```
+$ docker build -t flicks-demo .
+$ docker run -it -rm -p 81:81 -p 82:82 --name flicks-demo-app flicks-demo
+```
+
 ## Django Admin
 
 URL: http://{url}:{port}/
