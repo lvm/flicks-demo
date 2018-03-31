@@ -124,7 +124,7 @@ class UserLogoutView(APIView):
 
         django_logout(request)
         return Response({"message": "Thank you, Come again."},
-                        status=HTTP_202_ACCEPTED)
+                        status=status.HTTP_202_ACCEPTED)
 
 
 class FilmViewSet(mixins.ListModelMixin,
@@ -177,7 +177,7 @@ class FilmViewSet(mixins.ListModelMixin,
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
+                            status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"message": serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -243,7 +243,7 @@ class PersonViewSet(mixins.ListModelMixin,
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
+                            status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"message": serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
