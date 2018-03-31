@@ -86,7 +86,7 @@ args:
 
 return:
 
-* http 200 + Data
+* http 201 + Data
 
 ### Update Film
 
@@ -100,7 +100,7 @@ args:
 
 return:
 
-* http 200 + Data
+* http 202 + Data
 
 ### Delete Film
 
@@ -144,7 +144,7 @@ args:
 
 return:
 
-* http 200 + Data
+* http 201 + Data
 
 ### Update Person
 
@@ -162,7 +162,7 @@ args:
 
 return:
 
-* http 200 + Data
+* http 202 + Data
 
 ### Delete Person
 
