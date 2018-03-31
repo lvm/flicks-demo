@@ -113,7 +113,7 @@ class UserLoginView(APIView):
 
 
 class UserLogoutView(APIView):
-    throttle_classes = (UserRateThrottle,)
+    throttle_classes = (AnonRateThrottle, UserRateThrottle,)
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, format='json'):
@@ -130,7 +130,7 @@ class UserLogoutView(APIView):
 class FilmViewSet(mixins.ListModelMixin,
                   mixins.RetrieveModelMixin,
                   viewsets.GenericViewSet):
-    throttle_classes = (UserRateThrottle,)
+    throttle_classes = (AnonRateThrottle, UserRateThrottle,)
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Film.objects.available()
     serializer_class = FilmSerializer
@@ -194,8 +194,7 @@ class FilmViewSet(mixins.ListModelMixin,
 class PersonViewSet(mixins.ListModelMixin,
                     mixins.RetrieveModelMixin,
                     viewsets.GenericViewSet):
-
-    throttle_classes = (UserRateThrottle,)
+    throttle_classes = (AnonRateThrottle, UserRateThrottle,)
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Person.objects.available()
     serializer_class = PersonSerializer
